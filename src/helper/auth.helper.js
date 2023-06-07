@@ -47,7 +47,19 @@ let refreshToken = function (data) {
   });
 };
 
+let checkToken = function (token) {
+  return new Promise(function (resolve, reject) {
+    jwt.verify(token, ACCESS_TOKEN, function (err, data) {
+      if (err) {
+        return reject(err);
+      }
+      return resolve({ data: data });
+    });
+  });
+};
+
 module.exports = {
   make: make,
   refreshToken: refreshToken,
+  checkToken: checkToken,
 };
