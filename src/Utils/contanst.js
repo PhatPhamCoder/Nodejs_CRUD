@@ -14,6 +14,8 @@ const constantNotify = {
   PASS_FAILD: "Mật khẩu không chính xác",
   ACCOUNT_NOTEMPTY: "Tài khoản không được để trống",
   PASSWORD_NOTEMPTY: "Mật khẩu không được để trống",
+  DELETE_DATA_SUCCESS: "Xóa thành công",
+  NOT_EXITS: "Không tồn tại",
 };
 
 module.exports = constantNotify;

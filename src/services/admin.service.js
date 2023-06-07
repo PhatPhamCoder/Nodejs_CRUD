@@ -71,7 +71,7 @@ exports.login = async (account, password, result) => {
               updateToken,
               [_refreshToken, dataRes[0].id],
               (err, dataRes_) => {
-                console.log(dataRes_);
+                // console.log(dataRes_);
                 if (err) {
                   return result({ msg: constantNotify.ERROR }, null);
                 }
@@ -89,6 +89,85 @@ exports.login = async (account, password, result) => {
         },
       );
       conn.release();
+    });
+  } catch (error) {
+    result({ msg: error }, null);
+  }
+};
+
+// GetAll
+exports.getall = async (dataSearch, offset, limit, result) => {
+  try {
+    // let keyword = "";
+    // let role = "";
+    // const innerJoin = `tbl_role INNER JOIN ${tableName} ON tbl_role.id = ${tableName}.role_id `;
+    // const selectCount = `SELECT COUNT(*) FROM ${innerJoin}`;
+    // const selectData = `${tableName}.id,${tableName}.name,tbl_role.name as name_role,${tableName}.account,${tableName}.email,${tableName}.active,${tableName}.created_at,${tableName}.updated_at`;
+    // let where = "WHERE type = 0";
+    // let query = `SELECT ${selectData},(${selectCount} ${where} ) as total FROM ${innerJoin} ${where} ORDER BY ${tableName}.id DESC LIMIT ${offset},${limit}`;
+    let dataQuery = `SELECT * FROM tbl_admin`;
+
+    // if (dataSearch.keyword && !dataSearch.role) {
+    //   keyword = dataSearch.keyword;
+    //   where = `WHERE ${tableName}.name LIKE "%${keyword}%" AND type = 0`;
+
+    //   query = `SELECT ${selectData},(${selectCount} ${where}) as total FROM ${innerJoin} ${where} ORDER BY ${tableName}.id DESC LIMIT ${offset},${limit}`;
+    // }
+    // if (!dataSearch.keyword && dataSearch.role) {
+    //   role = dataSearch.role;
+    //   where = `WHERE ${tableName}.role_id LIKE "%${role}%" AND type = 0`;
+    //   query = `SELECT ${selectData},(${selectCount} ${where}) as total FROM ${innerJoin} ${where} ORDER BY ${tableName}.id DESC LIMIT ${offset},${limit}`;
+    // }
+    // if (dataSearch.keyword && dataSearch.role) {
+    //   role = dataSearch.role;
+    //   keyword = dataSearch.keyword;
+    //   where = `WHERE ${tableName}.role_id LIKE "%${role}%" AND ${tableName}.name LIKE "%${keyword}%" AND type = 0`;
+    //   query = `SELECT ${selectData},(${selectCount} ${where}) as total FROM ${innerJoin} ${where} ORDER BY ${tableName}.id DESC LIMIT ${offset},${limit}`;
+    // }
+
+    db.query(dataQuery, (err, dataRes) => {
+      // console.log(query);
+      if (err) {
+        // console.log(err);
+        return result({ msg: constantNotify.ERROR }, null);
+      }
+      // console.log(dataRes);
+      result(null, dataRes);
+    });
+  } catch (error) {
+    result({ msg: error }, null);
+  }
+};
+
+// getById
+exports.getById = async (id, result) => {
+  try {
+    const query = `SELECT * FROM ${tableName} WHERE ${tableName}.id = ?`;
+    db.query(query, id, (err, dataRes) => {
+      if (err) {
+        return result({ msg: constantNotify.ERROR }, null);
+      }
+
+      result(null, dataRes);
+    });
+  } catch (error) {
+    result({ msg: error }, null);
+  }
+};
+
+// Delete
+exports.delete = async (id, result) => {
+  try {
+    const query = `DELETE FROM ${tableName} WHERE ${tableName}.id = ?`;
+    db.query(query, id, (err, dataRes) => {
+      if (err) {
+        return result({ msg: constantNotify.ERROR }, null);
+      }
+
+      if (dataRes.affectedRows === 0) {
+        return result({ msg: `ID ${constantNotify.NOT_EXITS}` });
+      }
+      result(null, dataRes);
     });
   } catch (error) {
     result({ msg: error }, null);

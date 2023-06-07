@@ -4,6 +4,8 @@ const adminControler = require("../controllers/admin.controller");
 const jwtMiddleware = require("../middlewares/jwt.middleware");
 const constantNotify = require("../Utils/contanst");
 module.exports = (app) => {
+  router.get("/getall", jwtMiddleware.isAuth, adminControler.getall);
+  router.get("/getbyid/:id", jwtMiddleware.isAuth, adminControler.getById);
   // Tạo người dùng chỉ cho phép admin sau khi đăng nhập có token mới tạo đc
   router.post("/register", jwtMiddleware.isAuth, adminControler.register);
   router.post(
@@ -15,5 +17,6 @@ module.exports = (app) => {
     ],
     adminControler.login,
   );
+  router.delete("/delete/:id", jwtMiddleware.isAuth, adminControler.delete);
   app.use("/api/v1/admin", router);
 };
