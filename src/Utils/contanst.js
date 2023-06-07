@@ -7,7 +7,7 @@ const constantNotify = {
   VALIDATE_PASSWORD:
     "Mật khẩu bao gồm ký tự in hoa, chữ thường, số và ký tự đặc biệt",
   ERROR: "Đã xảy ra lỗi",
-  ALREADY_EXIST: "Giá trị đã tồn tại",
+  ALREADY_EXIST: "đã tồn tại",
   ADD_DATA_SUCCESS: "Thêm thành công",
   ACCOUNT_NOTFOUND: "Tài khoản không chinh xác",
   ACTIVE_FAILD: "Tài khoản chưa kích hoạt",
