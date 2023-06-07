@@ -179,3 +179,52 @@ exports.register = async (req, res) => {
     });
   }
 };
+
+// Login
+exports.login = async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.send({
+      result: false,
+      errors: errors.array(),
+    });
+  }
+  const { account, password } = req.body;
+
+  if (!regex.regexAccount.test(account)) {
+    return res.send({
+      result: false,
+      error: [
+        {
+          param: "account",
+          msg: constantNotify.VALIDATE_ACCOUNT,
+        },
+      ],
+    });
+  }
+
+  if (!regex.regexPass.test(password)) {
+    return res.send({
+      result: false,
+      error: [
+        {
+          param: "password",
+          msg: constantNotify.VALIDATE_PASSWORD,
+        },
+      ],
+    });
+  }
+  adminService.login(account, password, (err, res_) => {
+    if (err) {
+      return res.send({
+        result: false,
+        msg: [err],
+      });
+    }
+
+    res.send({
+      result: true,
+      data: res_,
+    });
+  });
+};
