@@ -16,6 +16,8 @@ app.use(bodyParser.json());
 const port = process.env.PORT;
 const base_url = process.env.BASE_URL;
 
+// import router
+require("./src/routes/admin.route")(app);
 app.listen(port, () => {
   console.log(`🚀 Server is running at ${base_url}:${port}`);
 });
