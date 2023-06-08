@@ -12,7 +12,7 @@ connection.getConnection(function (err, connection) {
   if (err) {
     throw err;
   }
-  console.log("Database is Connected");
+  console.log("🚦 Database is Connected");
 });
 
 module.exports = connection;

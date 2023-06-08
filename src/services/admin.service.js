@@ -173,3 +173,41 @@ exports.delete = async (id, result) => {
     result({ msg: error }, null);
   }
 };
+
+// Update
+exports.update = async (id, data, result) => {
+  // console.log("check data from service::", data);
+  try {
+    const query = `UPDATE ${tableName} SET name=?,role_id=?,email=?,account=?,active =?,updated_at=? WHERE id =?`;
+    // console.log("check data from service::", dataRes);
+    db.query(
+      query,
+      [
+        data.name,
+        data.role_id,
+        data.email,
+        data.account,
+        data.active,
+        data.updated_at,
+        id,
+      ],
+      (err, dataRes) => {
+        if (err) {
+          return result(
+            {
+              msg: constantNotify.ERROR,
+            },
+            null,
+          );
+        }
+
+        if (dataRes.affectedRows === 0) {
+          return result({ msg: `ID ${constantNotify.NOT_EXITS}` }, null);
+        }
+        result(null, dataRes.insertId);
+      },
+    );
+  } catch (error) {
+    result({ msg: error }, null);
+  }
+};

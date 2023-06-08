@@ -4,6 +4,7 @@ const constantNotify = {
   TOKEN_TIME_LIFE: "3d",
   REFRESH_TOKEN_TIME_LIFE: "3d",
   VALIDATE_ACCOUNT: "Tài khoản chỉ chứa ký tự thường và số",
+  VALIDATE_EMAIL: "Vui lòng nhập đúng định dạng Email",
   VALIDATE_PASSWORD:
     "Mật khẩu bao gồm 8 chữ số bao gồm ký tự in hoa, chữ thường, số",
   ERROR: "Đã xảy ra lỗi",
@@ -15,6 +16,7 @@ const constantNotify = {
   ACCOUNT_NOTEMPTY: "Tài khoản không được để trống",
   PASSWORD_NOTEMPTY: "Mật khẩu không được để trống",
   DELETE_DATA_SUCCESS: "Xóa thành công",
+  UPDATE_DATA_SUCCESS: "Cập nhật thành công",
   NOT_EXITS: "Không tồn tại",
 };
 

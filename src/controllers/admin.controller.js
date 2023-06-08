@@ -306,3 +306,159 @@ exports.delete = async (req, res) => {
     });
   }
 };
+
+// Update
+exports.update = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.send({ result: false, error: errors.array() });
+    }
+    const id = req.params.id;
+    const { name, email, account, role_id, active } = req.body;
+    // console.log({ id, name, email, account, role_id, active });
+
+    if (!regex.regexAccount.test(account)) {
+      if (err) {
+        return res.send({
+          result: false,
+          error: [
+            {
+              param: "account",
+              msg: constantNotify.VALIDATE_ACCOUNT,
+            },
+          ],
+        });
+      }
+    }
+
+    if (!regex.regexEmail.test(email)) {
+      if (err) {
+        return res.send({
+          result: false,
+          error: [
+            {
+              param: "email",
+              msg: constantNotify.VALIDATE_EMAIL,
+            },
+          ],
+        });
+      }
+    }
+
+    db.getConnection((err, conn) => {
+      if (err) {
+        return res.send({
+          result: false,
+          error: [{ msg: constantNotify.ERROR }],
+        });
+      }
+
+      conn.query(
+        `SELECT account,id FROM ${tableName} WHERE account = ?`,
+        account,
+        async (err, dataRes) => {
+          if (err) {
+            return res.send({
+              result: false,
+              error: [{ msg: constantNotify.ERROR }],
+            });
+          }
+          // console.log(dataRes);
+          if (dataRes.length !== 0 && dataRes[0]?.id !== parseInt(id)) {
+            await res.send({
+              result: false,
+              error: [
+                {
+                  param: "account",
+                  msg: `Account ${constantNotify.ALREADY_EXIST}`,
+                },
+              ],
+            });
+            return;
+          }
+
+          conn.query(
+            `SELECT email,id FROM ${tableName} WHERE email = ?`,
+            email,
+            async (err, dataRes_) => {
+              if (err) {
+                return res.send({
+                  result: false,
+                  error: [{ msg: constantNotify.ERROR }],
+                });
+              }
+
+              if (dataRes_.length !== 0 && dataRes_[0]?.id !== parseInt(id)) {
+                await res.send({
+                  result: false,
+                  error: [
+                    {
+                      param: "email",
+                      error: `Email ${constantNotify.ALREADY_EXIST}`,
+                    },
+                  ],
+                });
+                return;
+              }
+
+              // console.log("check dataRes_::", dataRes_);
+              const admin = new Admin({
+                name: name,
+                role_id: role_id,
+                email: email,
+                account: account,
+                active: !active ? false : true,
+                expired_on: null,
+                updated_at: Date.now(),
+              });
+              // console.log("check Data new::", admin);
+              adminService.update(id, admin, async (err, res_) => {
+                if (err) {
+                  res.send({
+                    result: false,
+                    error: [err],
+                  });
+                } else {
+                  conn.query(
+                    `SELECT name FROM tbl_role WHERE id = ?`,
+                    role_id,
+                    (err, dataRes) => {
+                      if (err) {
+                        return res.send({
+                          result: false,
+                          error: [{ msg: constantNotify.ERROR }],
+                        });
+                      }
+                      admin.id = id;
+                      admin.name_role = dataRes[0].name;
+                      admin.created_at = 0;
+                      delete admin.password;
+                      delete admin.role_id;
+                      delete admin.refresh_token;
+                      delete admin.type;
+                      res.send({
+                        result: true,
+                        data: {
+                          msg: constantNotify.UPDATE_DATA_SUCCESS,
+                          id,
+                          newData: admin,
+                        },
+                      });
+                    },
+                  );
+                }
+              });
+            },
+          );
+        },
+      );
+      conn.release();
+    });
+  } catch (error) {
+    res.send({
+      result: false,
+      error: [{ msg: error }],
+    });
+  }
+};

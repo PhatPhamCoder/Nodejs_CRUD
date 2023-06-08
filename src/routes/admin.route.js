@@ -18,5 +18,6 @@ module.exports = (app) => {
     adminControler.login,
   );
   router.delete("/delete/:id", jwtMiddleware.isAuth, adminControler.delete);
+  router.put("/update-admin/:id", jwtMiddleware.isAuth, adminControler.update);
   app.use("/api/v1/admin", router);
 };
