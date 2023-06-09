@@ -10,6 +10,7 @@ const constantNotify = {
   ERROR: "Đã xảy ra lỗi",
   ALREADY_EXIST: "đã tồn tại",
   ADD_DATA_SUCCESS: "Thêm thành công",
+  ADD_DATA_FAILED: "Thêm thất bại",
   ACCOUNT_NOTFOUND: "Tài khoản không chinh xác",
   ACTIVE_FAILD: "Tài khoản chưa kích hoạt",
   PASS_FAILD: "Mật khẩu không chính xác",

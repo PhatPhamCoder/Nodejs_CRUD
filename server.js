@@ -4,7 +4,6 @@ const app = express();
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const compression = require("compression");
-const connection = require("./src/models/connectDb");
 
 require("dotenv").config();
 app.use(morgan("dev"));
@@ -18,6 +17,8 @@ const base_url = process.env.BASE_URL;
 
 // import router
 require("./src/routes/admin.route")(app);
+require("./src/routes/role.route")(app);
+
 app.listen(port, () => {
   console.log(`🚀 Server is running at ${base_url}:${port}`);
 });

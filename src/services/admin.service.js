@@ -139,7 +139,7 @@ exports.getall = async (dataSearch, offset, limit, result) => {
   }
 };
 
-// getById
+// GetById
 exports.getById = async (id, result) => {
   try {
     const query = `SELECT * FROM ${tableName} WHERE ${tableName}.id = ?`;

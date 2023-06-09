@@ -47,6 +47,7 @@ let refreshToken = function (data) {
   });
 };
 
+// Check Token
 let checkToken = function (token) {
   return new Promise(function (resolve, reject) {
     jwt.verify(token, ACCESS_TOKEN, function (err, data) {
