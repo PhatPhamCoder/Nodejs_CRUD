@@ -131,7 +131,7 @@ exports.register = async (req, res) => {
                   conn.query(
                     `SELECT name FROM tbl_role WHERE id = ? `,
                     role_id,
-                    (err, dataRes__) => {
+                    (err, dataRes) => {
                       if (err) {
                         return res.send({
                           result: false,
@@ -139,7 +139,7 @@ exports.register = async (req, res) => {
                         });
                       }
                       admin.id = res_;
-                      admin.name_role = dataRes__[0]?.name;
+                      admin.name_role = dataRes[0]?.name;
                       admin.updated_at = 0;
                       delete admin.password;
                       delete admin.role_id;
@@ -222,32 +222,17 @@ exports.login = async (req, res) => {
 // Get All
 exports.getall = async (req, res) => {
   try {
-    const dataSearch = req.query;
-    let offset = 0;
-    let limit = 10;
-    if (dataSearch.offset) {
-      offset = dataSearch.offset;
-    }
-    if (dataSearch.limit) {
-      limit = dataSearch.limit;
-    }
-    adminService.getall(dataSearch, offset, limit, (err, res_) => {
-      console.log(res_);
+    adminService.getall((err, res_) => {
+      // console.log(res_);
       if (err) {
         return res.send({
           result: false,
           error: [err],
         });
       }
-      const totalPage = Math.ceil(res_[0]?.total / limit);
-
-      res_.forEach((item) => {
-        delete item.total;
-      });
 
       res.send({
         result: true,
-        totalPage: totalPage ? totalPage : 0,
         data: res_,
       });
     });
