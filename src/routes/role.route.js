@@ -2,7 +2,6 @@ const router = require("express").Router();
 const { body } = require("express-validator");
 const roleController = require("../controllers/role.controller");
 module.exports = (app) => {
-  // router.get("/getall", jwtMiddleware.isAuth, roleController.getall);
   router.get("/getbyid/:id", roleController.getById);
   router.post(
     "/create-role",

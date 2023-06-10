@@ -1,0 +1,42 @@
+POST http://localhost:8080/api/v1/admin/login
+Content-Type: "application/json"
+
+{
+    "account":"devtest",
+    "password":"Phat1234"
+}
+
+POST http://localhost:8080/api/v1/admin/register
+Content-Type: "application/json"
+
+{
+    "name": "Devtest",
+    "role_id": "1",
+    "password": "Phat1234",
+    "email": "devtest@gmail.com",
+    "account": "devtest",
+    "active": "1"
+}
+
+
+GET http://localhost:8080/api/v1/admin/getall
+Content-Type: "application/json"
+HEAD : Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXRhIjoyLCJpYXQiOjE2ODYzNzE0ODEsImV4cCI6MTY4NjYzMDY4MX0.EkNWih88c8GMBPAuOWzBjRpim7oUscpZ69YpVE50884"
+
+GET http://localhost:8080/api/v1/admin/getbyid/1
+Content-Type: "application/json"
+
+
+PUT http://localhost:8080/api/v1/admin/update-admin/1
+Content-Type: "application/json"
+
+{
+    "name":"DevTest2",
+    "role_id":"4",
+    "email":"admin2025@gmail.com",
+    "account":"dev2025",
+    "active":""
+}
+
+DELETE http://localhost:8080/api/v1/admin/delete/2
+Content-Type: "application/json"

@@ -2,7 +2,6 @@ const db = require("../models/connectDb");
 const tableName = "tbl_admin";
 const constantNotify = require("../Utils/contanst");
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const jwts = require("../helper/auth.helper");
 
 // Register
