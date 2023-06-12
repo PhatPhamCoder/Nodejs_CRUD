@@ -1,23 +1,25 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-
 // Đường dẫn lưu hình ảnh
 const dirImage = "./uploads/images";
+const dirThumb = "./uploads/thumb";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // Check folder upload is created ?
-    if (!fs.existsSync(dirImage)) {
+    if (!fs.existsSync(dirImage) && !fs.existsSync(dirThumb)) {
       fs.mkdirSync(dirImage, { recursive: true });
+      fs.mkdirSync(dirThumb, { recursive: true });
     }
 
-    // Chấp nhận các định dạng
+    // Chấp nhận các định dạng sau
     var math = ["image/png", "image/jpeg", "image/jpg"];
     if (math.indexOf(file.mimetype) === -1) {
       let errorMess = `The file <strong>${file.originalname}</strong> is invalid. Only allowed to upload image jpeg or png.`;
       return cb(errorMess, null);
     }
+
     cb(null, `${dirImage}`);
   },
 

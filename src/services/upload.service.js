@@ -5,6 +5,7 @@ const fs = require("fs");
 
 // Upload
 exports.upload = async (data, result) => {
+  console.log(data);
   try {
     const query = `INSERT INTO ${tableName} SET file_src = ?`;
     db.query(query, [data], (err, dataRes) => {

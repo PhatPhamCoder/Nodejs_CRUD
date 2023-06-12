@@ -3,9 +3,10 @@ const uploadService = require("../services/upload.service");
 const db = require("../models/connectDb");
 const tableName = "images";
 const fs = require("fs");
+const sharp = require("sharp");
 const Image = require("../models/upload.model");
-
 const directoryPath = __basedir + "/uploads/images/";
+const dirThumb = "./uploads/thumb";
 
 // Upload image
 exports.upload = async (req, res) => {
@@ -18,19 +19,33 @@ exports.upload = async (req, res) => {
     }
 
     if (req.file.size <= 2000000) {
-      const image = req.file.filename;
-      uploadService.upload(image, (err, res_) => {
-        if (err) {
-          return res.send({
-            result: false,
-            error: [{ msg: constantNotify.ERROR }],
+      // console.log(req.file.path);
+      const imageName = req.file.filename;
+      // console.log("Check Image name::", imageName);
+
+      await sharp(req.file.path)
+        .resize({ width: 150, height: 150 })
+        .toFile(`uploads/thumb/` + req?.file?.filename, (err) => {
+          if (err) {
+            return res.send({
+              result: false,
+              error: [err],
+            });
+          }
+
+          uploadService.upload(imageName, (err, res_) => {
+            if (err) {
+              return res.send({
+                result: false,
+                error: [{ msg: constantNotify.ERROR }],
+              });
+            }
+            return res.send({
+              result: true,
+              data: { msg: constantNotify.ADD_DATA_SUCCESS },
+            });
           });
-        }
-        return res.send({
-          result: true,
-          data: { msg: constantNotify.ADD_DATA_SUCCESS },
         });
-      });
     } else {
       return res.send({
         result: false,
@@ -161,10 +176,6 @@ exports.delete = async (req, res) => {
                   error: [{ msg: constantNotify.ERROR }],
                 });
               }
-              // console.log(
-              //   "check Image name::",
-              //   fs.existsSync(directoryPath + dataRes_[0]?.file_src),
-              // );
               // Xóa file trong server
               if (dataRes_.length !== 0) {
                 if (fs.existsSync(directoryPath + dataRes_[0]?.file_src)) {
