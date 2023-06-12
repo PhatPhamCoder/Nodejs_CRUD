@@ -10,20 +10,33 @@ const directoryPath = __basedir + "/uploads/images/";
 // Upload image
 exports.upload = async (req, res) => {
   try {
-    const image = req.file.filename;
-
-    uploadService.upload(image, (err, res_) => {
-      if (err) {
-        return res.send({
-          result: false,
-          error: [{ msg: constantNotify.ERROR }],
-        });
-      }
+    if (!req.file) {
       return res.send({
-        result: true,
-        data: { msg: constantNotify.ADD_DATA_SUCCESS },
+        result: false,
+        error: [{ msg: constantNotify.VALIDATE_FILE }],
       });
-    });
+    }
+
+    if (req.file.size <= 2000000) {
+      const image = req.file.filename;
+      uploadService.upload(image, (err, res_) => {
+        if (err) {
+          return res.send({
+            result: false,
+            error: [{ msg: constantNotify.ERROR }],
+          });
+        }
+        return res.send({
+          result: true,
+          data: { msg: constantNotify.ADD_DATA_SUCCESS },
+        });
+      });
+    } else {
+      return res.send({
+        result: false,
+        error: [{ msg: constantNotify.VALIDATE_FILE_SIZE }],
+      });
+    }
   } catch (error) {
     return res.send({
       result: false,
@@ -37,17 +50,67 @@ exports.getById = async (req, res) => {
   try {
     const id = req.params.id;
 
-    uploadService.getById(id, (err, dataRes) => {
+    db.getConnection((err, conn) => {
       if (err) {
         return res.send({
           result: false,
-          error: [{ msg: constantNotify.ERROR }],
+          error: [err],
         });
       }
-      return res.send({
-        result: true,
-        data: dataRes,
-      });
+
+      conn.query(
+        `SELECT id FROM ${tableName} WHERE id = ?`,
+        id,
+        (err, dataRes) => {
+          if (err) {
+            return res.send({
+              result: false,
+              error: [err],
+            });
+          }
+
+          if (dataRes.length === 0) {
+            return res.send({
+              result: false,
+              error: [{ msg: `Hình ảnh ${constantNotify.NOT_EXITS}` }],
+            });
+          }
+          conn.query(
+            `SELECT file_src FROM ${tableName} WHERE id = ?`,
+            id,
+            (err, dataRes_) => {
+              if (err) {
+                return res.send({
+                  result: false,
+                  error: [{ msg: constantNotify.ERROR }],
+                });
+              }
+              if (
+                dataRes_.length !== 0 &&
+                !fs.existsSync(directoryPath + dataRes_[0]?.file_src)
+              ) {
+                return res.send({
+                  result: false,
+                  error: [{ msg: `Hình ảnh ${constantNotify.NOT_EXITS}` }],
+                });
+              }
+              uploadService.getById(id, (err, dataRes) => {
+                if (err) {
+                  return res.send({
+                    result: false,
+                    error: [{ msg: constantNotify.ERROR }],
+                  });
+                }
+                return res.send({
+                  result: true,
+                  data: dataRes,
+                });
+              });
+            },
+          );
+        },
+      );
+      conn.release();
     });
   } catch (error) {
     return res.send({
@@ -98,12 +161,23 @@ exports.delete = async (req, res) => {
                   error: [{ msg: constantNotify.ERROR }],
                 });
               }
-              // console.log("check Image name::", dataRes_[0]?.file_src);
+              // console.log(
+              //   "check Image name::",
+              //   fs.existsSync(directoryPath + dataRes_[0]?.file_src),
+              // );
               // Xóa file trong server
               if (dataRes_.length !== 0) {
-                fs.unlinkSync(directoryPath + dataRes_[0]?.file_src);
+                if (fs.existsSync(directoryPath + dataRes_[0]?.file_src)) {
+                  // fs.existsSync(directoryPath + dataRes_[0]?.file_src);
+                  fs.unlinkSync(directoryPath + dataRes_[0]?.file_src);
+                } else {
+                  return res.send({
+                    result: false,
+                    error: [{ msg: `Hình ảnh ${constantNotify.NOT_EXITS}` }],
+                  });
+                }
               }
-              uploadService.delete(id, (err, dataRes) => {
+              uploadService.delete(id, (err, res_) => {
                 if (err) {
                   return res.send({
                     result: false,
@@ -112,7 +186,9 @@ exports.delete = async (req, res) => {
                 }
                 return res.send({
                   result: true,
-                  data: { msg: constantNotify.DELETE_DATA_SUCCESS },
+                  data: {
+                    msg: `${constantNotify.DELETE_DATA_SUCCESS} có ID ${id}`,
+                  },
                 });
               });
             },
@@ -132,7 +208,8 @@ exports.delete = async (req, res) => {
 // getAll
 exports.getAll = async (req, res) => {
   try {
-    uploadService.getAll((err, dataRes) => {
+    const { limit } = req.query;
+    uploadService.getAll(limit, (err, dataRes) => {
       if (err) {
         return res.send({
           result: false,

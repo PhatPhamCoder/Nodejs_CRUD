@@ -95,10 +95,9 @@ exports.login = async (account, password, result) => {
 };
 
 // GetAll
-exports.getall = async (result) => {
+exports.getall = async (limit, result) => {
   try {
-    let dataQuery = `SELECT * FROM tbl_admin`;
-
+    let dataQuery = `SELECT * FROM tbl_admin LIMIT 1,${limit}`;
     db.query(dataQuery, (err, dataRes) => {
       // console.log(query);
       if (err) {
@@ -175,9 +174,10 @@ exports.update = async (id, data, result) => {
           );
         }
 
-        if (dataRes.affectedRows === 0) {
-          return result({ msg: `ID ${constantNotify.NOT_EXITS}` }, null);
-        }
+        // if (dataRes.affectedRows === 0) {
+        //   return result({ msg: `ID ${constantNotify.NOT_EXITS}` }, null);
+        // }
+
         result(null, dataRes.insertId);
       },
     );

@@ -55,9 +55,9 @@ exports.delete = async (id, result) => {
 };
 
 // getAll
-exports.getAll = async (result) => {
+exports.getAll = async (limit, result) => {
   try {
-    const query = `SELECT * FROM ${tableName}`;
+    const query = `SELECT * FROM ${tableName} LIMIT 2,${limit}`;
     db.query(query, (err, dataRes) => {
       if (err) {
         return result({ msg: constantNotify.ERROR }, null);

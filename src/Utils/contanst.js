@@ -3,7 +3,8 @@ const constantNotify = {
   REFRESH_TOKEN: "PhatPham12345!@#",
   TOKEN_TIME_LIFE: "3d",
   REFRESH_TOKEN_TIME_LIFE: "3d",
-  VALIDATE_ACCOUNT: "Tài khoản chỉ chứa ký tự thường và số",
+  VALIDATE_ACCOUNT:
+    "Tài khoản phải chứa chứ thường, chữ hoa, ký tự đặc biệt và số",
   VALIDATE_EMAIL: "Vui lòng nhập đúng định dạng Email",
   VALIDATE_PASSWORD:
     "Mật khẩu bao gồm 8 chữ số bao gồm ký tự in hoa, chữ thường, số",
@@ -21,6 +22,8 @@ const constantNotify = {
   UPDATE_DATA_SUCCESS: "Cập nhật thành công",
   UPDATE_DATA_FAILED: "Cập nhật bị lối",
   NOT_EXITS: "Không tồn tại",
+  VALIDATE_FILE_SIZE: "Dung lượng file quá 2MB",
+  VALIDATE_FILE: "Vui lòng chọn file tải lên",
 };
 
 module.exports = constantNotify;

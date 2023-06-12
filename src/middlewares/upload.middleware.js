@@ -1,18 +1,26 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-// Đường dẫn lưu hình ảnh
-const dir = "./uploads/images";
 
-// Check xem đã tạo folder chứa ảnh chưa nếu chưa sẽ tự tạo 1 folder
-if (!fs.existsSync(dir)) {
-  fs.mkdirSync(dir, { recursive: true });
-}
+// Đường dẫn lưu hình ảnh
+const dirImage = "./uploads/images";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, `${dir}`);
+    // Check folder upload is created ?
+    if (!fs.existsSync(dirImage)) {
+      fs.mkdirSync(dirImage, { recursive: true });
+    }
+
+    // Chấp nhận các định dạng
+    var math = ["image/png", "image/jpeg", "image/jpg"];
+    if (math.indexOf(file.mimetype) === -1) {
+      let errorMess = `The file <strong>${file.originalname}</strong> is invalid. Only allowed to upload image jpeg or png.`;
+      return cb(errorMess, null);
+    }
+    cb(null, `${dirImage}`);
   },
+
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "_" + Math.round(Math.random() * 1e9);
     cb(
@@ -22,18 +30,9 @@ const storage = multer.diskStorage({
   },
 });
 
-const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image")) {
-    cb(null, true);
-  } else {
-    cb({ message: "Unsupport file format" }, null);
-  }
-};
-
 const upload = multer({
   storage: storage,
-  fileFilter: multerFilter,
-  limits: { fieldSize: 2000000 }, //Limit fileSize: 2MB
+  limits: { fieldSize: 200000 }, //Limit fileSize: 2MB
 });
 
 module.exports = upload;
