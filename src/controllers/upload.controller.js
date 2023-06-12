@@ -3,6 +3,7 @@ const uploadService = require("../services/upload.service");
 const db = require("../models/connectDb");
 const tableName = "images";
 const fs = require("fs");
+const Image = require("../models/upload.model");
 
 const directoryPath = __basedir + "/uploads/images/";
 
@@ -147,6 +148,80 @@ exports.getAll = async (req, res) => {
     return res.send({
       result: false,
       error: [{ msg: constantNotify.ERROR }],
+    });
+  }
+};
+
+// Update
+exports.update = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const imageName = req.file.filename;
+    db.getConnection((err, conn) => {
+      if (err) {
+        return res.send({
+          result: false,
+          error: [err],
+        });
+      }
+      conn.query(
+        `SELECT id FROM ${tableName} WHERE id = ?`,
+        id,
+        (err, dataRes) => {
+          if (err) {
+            return res.send({
+              result: false,
+              error: [err],
+            });
+          }
+          if (dataRes.length === 0) {
+            return res.send({
+              result: false,
+              error: [{ msg: `Hình ảnh ${constantNotify.NOT_EXITS}` }],
+            });
+          }
+          conn.query(
+            `SELECT file_src FROM ${tableName} WHERE id = ?`,
+            id,
+            (err, dataRes_) => {
+              if (err) {
+                return res.send({
+                  result: false,
+                  error: [err],
+                });
+              }
+              if (dataRes_.length !== 0) {
+                fs.unlinkSync(directoryPath + dataRes_[0]?.file_src);
+              }
+              const image = new Image({
+                file_src: imageName,
+                updated_at: Date.now(),
+              });
+              delete created_at;
+
+              uploadService.update(id, image, (err, res_) => {
+                if (err) {
+                  return res.send({
+                    result: false,
+                    error: [err],
+                  });
+                }
+
+                return res.send({
+                  result: true,
+                  data: image,
+                });
+              });
+            },
+          );
+        },
+      );
+      conn.release();
+    });
+  } catch (error) {
+    return res.send({
+      result: false,
+      error: [{ error }],
     });
   }
 };

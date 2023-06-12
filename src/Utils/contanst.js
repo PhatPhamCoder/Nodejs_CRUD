@@ -19,6 +19,7 @@ const constantNotify = {
   PASSWORD_NOTEMPTY: "Mật khẩu không được để trống",
   DELETE_DATA_SUCCESS: "Xóa thành công",
   UPDATE_DATA_SUCCESS: "Cập nhật thành công",
+  UPDATE_DATA_FAILED: "Cập nhật bị lối",
   NOT_EXITS: "Không tồn tại",
 };
 

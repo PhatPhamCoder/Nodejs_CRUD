@@ -68,3 +68,22 @@ exports.getAll = async (result) => {
     result({ msg: error }, null);
   }
 };
+
+// Update
+exports.update = async (id, data, result) => {
+  try {
+    const query = `UPDATE ${tableName} SET file_src = ? WHERE id = ?`;
+    db.query(query, [data.file_src, id], (err, dataRes) => {
+      if (err) {
+        result({ msg: constantNotify.UPDATE_DATA_FAILED }, null);
+      }
+      if (dataRes.affectedRows === 0) {
+        return result({ msg: `Hình ảnh ${constantNotify.NOT_EXITS}` }, null);
+      }
+
+      result(null, dataRes);
+    });
+  } catch (error) {
+    result({ msg: error }, null);
+  }
+};

@@ -7,5 +7,6 @@ module.exports = (app) => {
   router.get("/get-by-id/:id", uploadController.getById);
   router.get("/get-all", uploadController.getAll);
   router.delete("/delete/:id", uploadController.delete);
+  router.put("/update/:id", upload.single("image"), uploadController.update);
   app.use("/api/v1/upload", router);
 };
