@@ -14,11 +14,11 @@ const storage = multer.diskStorage({
     }
 
     // Chấp nhận các định dạng sau
-    var math = ["image/png", "image/jpeg", "image/jpg"];
-    if (math.indexOf(file.mimetype) === -1) {
-      let errorMess = `The file <strong>${file.originalname}</strong> is invalid. Only allowed to upload image jpeg or png.`;
-      return cb(errorMess, null);
-    }
+    // var math = ["image/png", "image/jpeg", "image/jpg", "import-excel/xlsx"];
+    // if (math.indexOf(file.mimetype) === -1) {
+    //   let errorMess = `The file <strong>${file.originalname}</strong> is invalid. Only allowed to upload image jpeg or png or xlsx.`;
+    //   return cb(errorMess, null);
+    // }
 
     cb(null, `${dirImage}`);
   },

@@ -5,10 +5,9 @@ const fs = require("fs");
 
 // Upload
 exports.upload = async (data, result) => {
-  console.log(data);
   try {
-    const query = `INSERT INTO ${tableName} SET file_src = ?`;
-    db.query(query, [data], (err, dataRes) => {
+    const query = `INSERT INTO ${tableName} SET file_src = ?, created_at = ?`;
+    db.query(query, [data.file_src, data.created_at], (err, dataRes) => {
       if (err) {
         return result({ msg: constantNotify.ERROR }, null);
       }
@@ -73,8 +72,8 @@ exports.getAll = async (limit, result) => {
 // Update
 exports.update = async (id, data, result) => {
   try {
-    const query = `UPDATE ${tableName} SET file_src = ? WHERE id = ?`;
-    db.query(query, [data.file_src, id], (err, dataRes) => {
+    const query = `UPDATE ${tableName} SET file_src = ?, updated_at = ? WHERE id = ?`;
+    db.query(query, [data.file_src, data.updated_at, id], (err, dataRes) => {
       if (err) {
         result({ msg: constantNotify.UPDATE_DATA_FAILED }, null);
       }
@@ -83,6 +82,47 @@ exports.update = async (id, data, result) => {
       }
 
       result(null, dataRes);
+    });
+  } catch (error) {
+    result({ msg: error }, null);
+  }
+};
+
+// impoer excel
+exports.importExcel = async (data, result) => {
+  // console.log("check data service::", data);
+  try {
+    db.getConnection(async (err, conn) => {
+      if (err) {
+        result({ msg: constantNotify }, null);
+      }
+
+      const insertPromises = [];
+      for (const value of data) {
+        insertPromises.push(
+          new Promise((resolve, reject) => {
+            conn.query(`INSERT INTO tbl_admin SET ?`, value, (err, dataRes) => {
+              if (err) {
+                reject(err);
+              } else {
+                // console.log(`Inserted ID: ${dataRes.insertId}`);
+                resolve(dataRes.insertId);
+              }
+            });
+          }),
+        );
+      }
+
+      await Promise.all(insertPromises)
+        .then((data) => {
+          result(null, data);
+        })
+        .catch((err) => {
+          // console.log(err);
+          result({ msg: constantNotify.ERROR }, null);
+        });
+
+      conn.release();
     });
   } catch (error) {
     result({ msg: error }, null);
