@@ -223,9 +223,10 @@ exports.login = async (req, res) => {
 exports.getall = async (req, res) => {
   try {
     // const limit = 2;
+    const offser = 0;
     const limit = req.query.limit;
     // let limit = 10;
-    adminService.getall(limit, (err, res_) => {
+    adminService.getall(offser, limit, (err, res_) => {
       // console.log(res_);
       if (err) {
         return res.send({

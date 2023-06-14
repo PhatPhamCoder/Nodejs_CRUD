@@ -342,12 +342,6 @@ exports.update = async (req, res) => {
 // import excel
 exports.importExcel = async (req, res) => {
   try {
-    // const password = "OPTECH@123";
-    // // Hash Password
-    // const salt = await bcrypt.genSalt(10);
-    // const hashPassword = await bcrypt.hash(password, salt);
-    // console.log(hashPassword);
-
     // Read File Excel từ đường dẫn import
     const workBook = XLSX.readFile(req?.file?.path);
     // Get Sheet [0] in file excel
@@ -377,7 +371,6 @@ exports.importExcel = async (req, res) => {
     });
     await Promise.all(queryPromse)
       .then((data) => {
-        // console.log("check data::", data);
         const dataSame = [];
         data?.forEach((item) => {
           // console.log("Check item::",item);
@@ -400,7 +393,6 @@ exports.importExcel = async (req, res) => {
           });
         }
 
-        // let dataAdmin = [];
         const dataAdmin = dataExcel?.map((item) => {
           const password = item["password"];
           const salt = bcrypt.genSaltSync(10);

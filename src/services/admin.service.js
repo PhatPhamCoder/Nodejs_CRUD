@@ -95,9 +95,9 @@ exports.login = async (account, password, result) => {
 };
 
 // GetAll
-exports.getall = async (limit, result) => {
+exports.getall = async (offser, limit, result) => {
   try {
-    let dataQuery = `SELECT * FROM tbl_admin LIMIT 1,${limit}`;
+    let dataQuery = `SELECT * FROM tbl_admin LIMIT ${offser},${limit}`;
     db.query(dataQuery, (err, dataRes) => {
       // console.log(query);
       if (err) {
