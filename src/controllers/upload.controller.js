@@ -177,7 +177,7 @@ exports.delete = async (req, res) => {
           conn.query(
             `SELECT file_src FROM ${tableName} WHERE id = ?`,
             id,
-            (err, dataRes_) => {
+            async (err, dataRes_) => {
               if (err) {
                 return res.send({
                   result: false,
@@ -186,9 +186,12 @@ exports.delete = async (req, res) => {
               }
               // Xóa file trong server
               if (dataRes_.length !== 0) {
-                if (fs.existsSync(directoryPath + dataRes_[0]?.file_src)) {
-                  // fs.existsSync(directoryPath + dataRes_[0]?.file_src);
-                  fs.unlinkSync(directoryPath + dataRes_[0]?.file_src);
+                if (
+                  fs.existsSync(directoryPath + dataRes_[0]?.file_src) &&
+                  fs.existsSync(directoryThumb + dataRes_[0]?.file_src)
+                ) {
+                  await fs.unlinkSync(directoryPath + dataRes_[0]?.file_src);
+                  await fs.unlinkSync(directoryThumb + dataRes_[0]?.file_src);
                 } else {
                   return res.send({
                     result: false,
@@ -252,6 +255,7 @@ exports.getAll = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const id = req.params.id;
+    const fileName = req.file.filename;
     db.getConnection((err, conn) => {
       if (err) {
         return res.send({
@@ -262,7 +266,7 @@ exports.update = async (req, res) => {
       conn.query(
         `SELECT file_src,id FROM ${tableName} WHERE id = ?`,
         id,
-        (err, dataRes) => {
+        async (err, dataRes) => {
           if (err) {
             return res.send({
               result: false,
@@ -270,7 +274,8 @@ exports.update = async (req, res) => {
             });
           }
 
-          if (dataRes.length === 0) {
+          if (dataRes.length === 0 && fs.existsSync(directoryPath + fileName)) {
+            await fs.unlinkSync(directoryPath + fileName);
             return res.send({
               result: false,
               error: [{ msg: `Hình ảnh ${constantNotify.NOT_EXITS}` }],
@@ -296,7 +301,7 @@ exports.update = async (req, res) => {
                 await fs.unlinkSync(directoryThumb + dataRes_[0]?.file_src);
               }
 
-              await sharp(req.file.path)
+              sharp(req?.file?.path)
                 .resize({ width: 150, height: 150 })
                 .toFile(`uploads/thumb/` + req?.file?.filename, (err) => {
                   if (err) {
