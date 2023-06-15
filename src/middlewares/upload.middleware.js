@@ -4,17 +4,23 @@ const fs = require("fs");
 // Đường dẫn lưu hình ảnh
 const dirImage = "./uploads/images";
 const dirThumb = "./uploads/thumb";
+const dirExcel = "./uploads/excel";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // Check folder upload is created ?
-    if (!fs.existsSync(dirImage) && !fs.existsSync(dirThumb)) {
+    if (
+      !fs.existsSync(dirImage) &&
+      !fs.existsSync(dirThumb) &&
+      !fs.existsSync(dirExcel)
+    ) {
       fs.mkdirSync(dirImage, { recursive: true });
       fs.mkdirSync(dirThumb, { recursive: true });
+      fs.mkdirSync(dirExcel, { recursive: true });
     }
 
-    // Chấp nhận các định dạng sau
-    // var math = ["image/png", "image/jpeg", "image/jpg", "import-excel/xlsx"];
+    // Chấp nhận các định dạng sau (Check dưới client)
+    // var math = ["image/png", "image/jpeg", "image/jpg"];
     // if (math.indexOf(file.mimetype) === -1) {
     //   let errorMess = `The file <strong>${file.originalname}</strong> is invalid. Only allowed to upload image jpeg or png or xlsx.`;
     //   return cb(errorMess, null);

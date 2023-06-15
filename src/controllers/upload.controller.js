@@ -4,12 +4,13 @@ const db = require("../models/connectDb");
 const tableName = "images";
 const fs = require("fs");
 const sharp = require("sharp");
-const Image = require("../models/upload.model");
-const directoryPath = __basedir + "/uploads/images/";
-const directoryThumb = __basedir + "/uploads/thumb/";
 const XLSX = require("xlsx");
 const bcrypt = require("bcrypt");
-const readXlsxFile = require("read-excel-file/node");
+const Image = require("../models/upload.model");
+
+const directoryPath = __basedir + "/uploads/images/";
+const directoryThumb = __basedir + "/uploads/thumb/";
+
 // Upload image
 exports.upload = async (req, res) => {
   try {
@@ -347,6 +348,7 @@ exports.update = async (req, res) => {
 // import excel
 exports.importExcel = async (req, res) => {
   try {
+    const fileName = req.file.filename;
     // Read File Excel từ đường dẫn import
     const workBook = XLSX.readFile(req?.file?.path);
     // Get Sheet [0] in file excel
@@ -389,7 +391,8 @@ exports.importExcel = async (req, res) => {
       })
       .then(async (data) => {
         // console.log(data);
-        if (data?.length > 0) {
+        if (data?.length > 0 && fs.existsSync(directoryPath + fileName)) {
+          await fs.unlinkSync(directoryPath + fileName);
           return res.send({
             result: false,
             error: [

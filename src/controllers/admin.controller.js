@@ -181,6 +181,7 @@ exports.login = async (req, res) => {
   }
   const { account, password } = req.body;
 
+  // Validate Account
   if (!regex.regexAccount.test(account)) {
     return res.send({
       result: false,
@@ -193,6 +194,7 @@ exports.login = async (req, res) => {
     });
   }
 
+  // Validate Password
   if (!regex.regexPass.test(password)) {
     return res.send({
       result: false,
@@ -204,6 +206,7 @@ exports.login = async (req, res) => {
       ],
     });
   }
+
   adminService.login(account, password, (err, res_) => {
     if (err) {
       return res.send({
@@ -467,6 +470,38 @@ exports.update = async (req, res) => {
     res.send({
       result: false,
       error: [{ msg: error }],
+    });
+  }
+};
+
+// refreshToken
+exports.refreshToken = async (req, res) => {
+  try {
+    const userId = req.body.userId;
+    const refreshToken = req.body.refreshToken;
+
+    if (!refreshToken) {
+      return res.send({
+        result: false,
+        error: [{ msg: `Refresh Token ${constantNotify.NOT_EXITS}` }],
+      });
+    }
+    adminService.refreshToken(userId, refreshToken, (err, res_) => {
+      if (err) {
+        return res.send({
+          result: false,
+          error: [err],
+        });
+      }
+      res.send({
+        result: true,
+        data: [res_],
+      });
+    });
+  } catch (error) {
+    return res.send({
+      result: false,
+      error: [{ error }],
     });
   }
 };

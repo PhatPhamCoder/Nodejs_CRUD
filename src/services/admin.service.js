@@ -3,7 +3,7 @@ const tableName = "tbl_admin";
 const constantNotify = require("../Utils/contanst");
 const bcrypt = require("bcrypt");
 const jwts = require("../helper/auth.helper");
-
+const jwt = require("jsonwebtoken");
 // Register
 exports.register = async (data, result) => {
   try {
@@ -28,6 +28,7 @@ exports.login = async (account, password, result) => {
       if (err) {
         return result({ msg: err }, null);
       }
+      // check id, active and password
       conn.query(
         `SELECT id,active,password FROM ${tableName} WHERE account = ?`,
         account,
@@ -60,12 +61,15 @@ exports.login = async (account, password, result) => {
                 null,
               );
             }
+
             // console.log(dataRes[0].id);
+
+            /**Create AccessToken and RefreshToken */
             const _token = await jwts.make(dataRes[0].id);
             const _refreshToken = await jwts.refreshToken(dataRes[0].id);
 
+            /**update RefreshToken at DB */
             const updateToken = `UPDATE ${tableName} SET refresh_token = ? WHERE id = ?`;
-
             conn.query(
               updateToken,
               [_refreshToken, dataRes[0].id],
@@ -181,6 +185,74 @@ exports.update = async (id, data, result) => {
         result(null, dataRes.insertId);
       },
     );
+  } catch (error) {
+    result({ msg: error }, null);
+  }
+};
+
+// refreshToken
+exports.refreshToken = async (userId, resfreshToken, result) => {
+  try {
+    db.getConnection((err, conn) => {
+      if (err) {
+        return res.send({
+          result: false,
+          error: [err],
+        });
+      }
+      const query = `SELECT * FROM tbl_admin WHERE refresh_token LIKE "%${resfreshToken}%" AND id = ${userId}`;
+      conn.query(query, async (err, dataRes) => {
+        if (err) {
+          result({ msg: constantNotify.ERROR }, null);
+          return;
+        }
+        // console.log(dataRes);
+        if (dataRes.length === 0) {
+          const query = `UPDATE ${tableName} SET refresh_token=0 WHERE id = ${userId}`;
+          conn.query(query, async (err, dataRes_) => {
+            if (err) {
+              result({ msg: constantNotify.ERROR }, null);
+              return;
+            }
+          });
+        }
+        if (dataRes.length > 0) {
+          await jwt.sign(
+            resfreshToken,
+            constantNotify.REFRESH_TOKEN,
+            async (err, dataVerify) => {
+              if (err) {
+                result({ msg: constantNotify.ERROR }, null);
+                return;
+              }
+              // console.log(dataVerify);
+              const accessToken = await jwt.sign(
+                { userId },
+                constantNotify.ACCESS_TOKEN,
+                {
+                  expiresIn: constantNotify.TOKEN_TIME_LIFE,
+                },
+              );
+
+              const refreshToken = await jwt.sign(
+                { userId },
+                constantNotify.REFRESH_TOKEN,
+                { expiresIn: constantNotify.REFRESH_TOKEN_TIME_LIFE },
+              );
+              const query = `UPDATE tbl_admin SET refresh_token=? WHERE id=?`;
+              conn.query(query, [refreshToken, userId], (err, dataRes__) => {
+                if (err) {
+                  result({ msg: constantNotify.ERROR }, null);
+                  return;
+                }
+              });
+              result(null, { accessToken, refreshToken });
+            },
+          );
+        }
+      });
+      conn.release();
+    });
   } catch (error) {
     result({ msg: error }, null);
   }

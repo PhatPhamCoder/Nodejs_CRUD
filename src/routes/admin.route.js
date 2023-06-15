@@ -3,6 +3,7 @@ const { body } = require("express-validator");
 const adminControler = require("../controllers/admin.controller");
 const jwtMiddleware = require("../middlewares/jwt.middleware");
 const constantNotify = require("../Utils/contanst");
+
 module.exports = (app) => {
   router.get("/getall", jwtMiddleware.isAuth, adminControler.getall);
   router.get("/getbyid/:id", jwtMiddleware.isAuth, adminControler.getById);
@@ -17,7 +18,10 @@ module.exports = (app) => {
     ],
     adminControler.login,
   );
+
   router.delete("/delete/:id", jwtMiddleware.isAuth, adminControler.delete);
   router.put("/update-admin/:id", jwtMiddleware.isAuth, adminControler.update);
+  router.post("/refresh-token", adminControler.refreshToken);
+
   app.use("/api/v1/admin", router);
 };

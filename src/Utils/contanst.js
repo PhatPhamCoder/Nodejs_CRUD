@@ -1,7 +1,7 @@
 const constantNotify = {
   ACCESS_TOKEN: "PhatPham12345!@#",
   REFRESH_TOKEN: "PhatPham12345!@#",
-  TOKEN_TIME_LIFE: "3d",
+  TOKEN_TIME_LIFE: "1h",
   REFRESH_TOKEN_TIME_LIFE: "3d",
   VALIDATE_ACCOUNT:
     "Tài khoản phải chứa chứ thường, chữ hoa, ký tự đặc biệt và số",
