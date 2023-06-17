@@ -1,5 +1,5 @@
 import axios from "axios";
-import jwtDecode from "jwt-decode";
+// import jwtDecode from "jwt-decode";
 
 const instance = axios.create({
   baseURL: "http://localhost:8080/api/v1/admin",
@@ -86,16 +86,16 @@ async function refreshToken() {
   const token = await instance.getLocalAccessToken();
   const refreshToken = await instance.getLocalRefreshToken();
   console.log("check refreshToken trước khi gửi lên server:::", refreshToken);
-  const decodeToken = jwtDecode(token.slice(0, token.length - 1));
+  // const decodeToken = jwtDecode(token.slice(0, token.length - 1));
   // console.log("Check decode Token", decodeToken);
   const dataRefresh = {
-    userId: decodeToken?.userId,
+    token: token,
     refreshToken: refreshToken,
   };
   // console.log(dataRefresh);
-  if (decodeToken) {
-    return (await instance.post("/refresh-token", dataRefresh)).data;
-  }
+  return (await instance.post("/refresh-token", dataRefresh)).data;
+  // if (decodeToken) {
+  // }
 }
 
 // export const axiosUpload = axios.create({
