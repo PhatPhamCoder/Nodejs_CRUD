@@ -2,25 +2,15 @@ const JWT = require("jsonwebtoken");
 require("dotenv").config();
 
 const signAccesToken = async (data) => {
-  //   const payload = {
-  //     userId: 1,
-  //     name: "PhatPham",
-  //   };
-
   const token = await JWT.sign(data, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: "1d",
+    expiresIn: "1m",
   });
 
   return token;
 };
 const signRefreshToken = async (data) => {
-  //   const payload = {
-  //     userId: 1,
-  //     name: "PhatPham",
-  //   };
-
   const token = await JWT.sign(data, process.env.REFRESH_TOKEN_SECRET, {
-    expiresIn: "3d",
+    expiresIn: "10m",
   });
 
   return token;

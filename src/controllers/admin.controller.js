@@ -5,6 +5,7 @@ const constantNotify = require("../Utils/contanst");
 const bcrypt = require("bcrypt");
 const Admin = require("../models/admin.model");
 const adminService = require("../services/admin.service");
+const jwtDecode = require("jwt-decode");
 const {
   signAccesToken,
   signRefreshToken,
@@ -484,9 +485,10 @@ exports.update = async (req, res) => {
 // refreshToken
 exports.refreshToken = async (req, res) => {
   try {
-    const userId = req.body.userId;
+    const accessToken = req.body.token;
+    const decodeToken = jwtDecode(accessToken.slice(0, accessToken.length - 1));
     const refreshToken = req.body.refreshToken;
-    // console.log("check refreshToken controler::", refreshToken);
+    const userId = decodeToken?.userId;
     db.getConnection((err, conn) => {
       if (err) {
         return res.send({
@@ -572,28 +574,6 @@ exports.refreshToken = async (req, res) => {
       );
       conn.release();
     });
-    // console.log(userId);
-    // const refreshToken = req.body.refreshToken;
-
-    // if (!refreshToken) {
-    //   return res.send({
-    //     result: false,
-    //     error: [{ msg: `Refresh Token ${constantNotify.NOT_EXITS}` }],
-    //   });
-    // }
-
-    // adminService.refreshToken(userId, (err, res_) => {
-    //   if (err) {
-    //     return res.send({
-    //       result: false,
-    //       error: [err],
-    //     });
-    //   }
-    //   res.send({
-    //     result: true,
-    //     data: res_,
-    //   });
-    // });
   } catch (error) {
     return res.send({
       result: false,
