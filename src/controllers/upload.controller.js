@@ -10,6 +10,7 @@ const Image = require("../models/upload.model");
 
 const directoryPath = __basedir + "/uploads/images/";
 const directoryThumb = __basedir + "/uploads/thumb/";
+const directoryExcel = __basedir + "/uploads/excel/";
 
 // Upload image
 exports.upload = async (req, res) => {
@@ -257,86 +258,104 @@ exports.update = async (req, res) => {
   try {
     const id = req.params.id;
     const fileName = req.file.filename;
-    db.getConnection((err, conn) => {
-      if (err) {
-        return res.send({
-          result: false,
-          error: [err],
-        });
-      }
-      conn.query(
-        `SELECT file_src,id FROM ${tableName} WHERE id = ?`,
-        id,
-        async (err, dataRes) => {
-          if (err) {
-            return res.send({
-              result: false,
-              error: [err],
-            });
-          }
+    if (req.file.size <= 2000000) {
+      db.getConnection((err, conn) => {
+        if (err) {
+          return res.send({
+            result: false,
+            error: [err],
+          });
+        }
+        conn.query(
+          `SELECT file_src,id FROM ${tableName} WHERE id = ?`,
+          id,
+          async (err, dataRes) => {
+            if (err) {
+              return res.send({
+                result: false,
+                error: [err],
+              });
+            }
 
-          if (dataRes.length === 0 && fs.existsSync(directoryPath + fileName)) {
-            await fs.unlinkSync(directoryPath + fileName);
-            return res.send({
-              result: false,
-              error: [{ msg: `Hình ảnh ${constantNotify.NOT_EXITS}` }],
-            });
-          }
+            if (
+              dataRes.length === 0 &&
+              fs.existsSync(directoryPath + fileName)
+            ) {
+              await fs.unlinkSync(directoryPath + fileName);
+              return res.send({
+                result: false,
+                error: [{ msg: `Hình ảnh ${constantNotify.NOT_EXITS}` }],
+              });
+            }
 
-          conn.query(
-            `SELECT file_src FROM ${tableName} WHERE id = ?`,
-            id,
-            async (err, dataRes_) => {
-              if (err) {
-                return res.send({
-                  result: false,
-                  error: [err],
-                });
-              }
-              if (
-                dataRes_.length !== 0 &&
-                fs.existsSync(directoryPath + dataRes_[0]?.file_src) &&
-                fs.existsSync(directoryThumb + dataRes_[0]?.file_src)
-              ) {
-                await fs.unlinkSync(directoryPath + dataRes_[0]?.file_src);
-                await fs.unlinkSync(directoryThumb + dataRes_[0]?.file_src);
-              }
-
-              sharp(req?.file?.path)
-                .resize({ width: 150, height: 150 })
-                .toFile(`uploads/thumb/` + req?.file?.filename, (err) => {
-                  if (err) {
-                    return res.send({
-                      result: false,
-                      error: [err],
-                    });
-                  }
-                  const image = new Image({
-                    file_src: req.file.filename,
-                    updated_at: Date.now(),
+            conn.query(
+              `SELECT file_src FROM ${tableName} WHERE id = ?`,
+              id,
+              async (err, dataRes_) => {
+                if (err) {
+                  return res.send({
+                    result: false,
+                    error: [err],
                   });
-                  delete created_at;
+                }
+                if (
+                  dataRes_.length !== 0 &&
+                  fs.existsSync(directoryPath + dataRes_[0]?.file_src) &&
+                  fs.existsSync(directoryThumb + dataRes_[0]?.file_src)
+                ) {
+                  await fs.unlinkSync(directoryPath + dataRes_[0]?.file_src);
+                  await fs.unlinkSync(directoryThumb + dataRes_[0]?.file_src);
+                }
 
-                  uploadService.update(id, image, (err, res_) => {
+                sharp(req?.file?.path)
+                  .resize({ width: 150, height: 150 })
+                  .toFile(`uploads/thumb/` + req?.file?.filename, (err) => {
                     if (err) {
                       return res.send({
                         result: false,
                         error: [err],
                       });
                     }
+                    const image = new Image({
+                      file_src: req.file.filename,
+                      updated_at: Date.now(),
+                    });
+                    delete created_at;
 
-                    return res.send({
-                      result: true,
-                      data: image,
+                    uploadService.update(id, image, (err, res_) => {
+                      if (err) {
+                        return res.send({
+                          result: false,
+                          error: [err],
+                        });
+                      }
+
+                      return res.send({
+                        result: true,
+                        data: image,
+                      });
                     });
                   });
-                });
-            },
-          );
-        },
-      );
-      conn.release();
-    });
+              },
+            );
+          },
+        );
+        conn.release();
+      });
+    } else {
+      if (fs.existsSync(directoryPath + fileName)) {
+        await fs.unlinkSync(directoryPath + fileName);
+      } else {
+        return res.send({
+          result: false,
+          error: [{ msg: constantNotify.ERROR }],
+        });
+      }
+      return res.send({
+        result: false,
+        error: [{ msg: constantNotify.VALIDATE_FILE_SIZE }],
+      });
+    }
   } catch (error) {
     return res.send({
       result: false,
@@ -391,8 +410,8 @@ exports.importExcel = async (req, res) => {
       })
       .then(async (data) => {
         // console.log(data);
-        if (data?.length > 0 && fs.existsSync(directoryPath + fileName)) {
-          await fs.unlinkSync(directoryPath + fileName);
+        if (data?.length > 0 && fs.existsSync(directoryExcel + fileName)) {
+          await fs.unlinkSync(directoryExcel + fileName);
           return res.send({
             result: false,
             error: [

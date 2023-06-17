@@ -4,19 +4,13 @@ const fs = require("fs");
 // Đường dẫn lưu hình ảnh
 const dirImage = "./uploads/images";
 const dirThumb = "./uploads/thumb";
-const dirExcel = "./uploads/excel";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     // Check folder upload is created ?
-    if (
-      !fs.existsSync(dirImage) &&
-      !fs.existsSync(dirThumb) &&
-      !fs.existsSync(dirExcel)
-    ) {
+    if (!fs.existsSync(dirImage) && !fs.existsSync(dirThumb)) {
       fs.mkdirSync(dirImage, { recursive: true });
       fs.mkdirSync(dirThumb, { recursive: true });
-      fs.mkdirSync(dirExcel, { recursive: true });
     }
 
     // Chấp nhận các định dạng sau (Check dưới client)
