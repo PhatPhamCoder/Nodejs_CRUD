@@ -3,12 +3,13 @@ const { body } = require("express-validator");
 const adminControler = require("../controllers/admin.controller");
 const jwtMiddleware = require("../middlewares/jwt.middleware");
 const constantNotify = require("../Utils/contanst");
+const { verifyToken, signAccesToken } = require("../middlewares/init_jwt");
 
 module.exports = (app) => {
-  router.get("/getall", jwtMiddleware.isAuth, adminControler.getall);
-  router.get("/getbyid/:id", jwtMiddleware.isAuth, adminControler.getById);
+  router.get("/getall", verifyToken, adminControler.getall);
+  router.get("/getbyid/:id", verifyToken, adminControler.getById);
   // Tạo người dùng chỉ cho phép admin sau khi đăng nhập có token mới tạo đc
-  router.post("/register", jwtMiddleware.isAuth, adminControler.register);
+  router.post("/register", verifyToken, adminControler.register);
   router.post(
     "/login",
     [
@@ -19,8 +20,8 @@ module.exports = (app) => {
     adminControler.login,
   );
 
-  router.delete("/delete/:id", jwtMiddleware.isAuth, adminControler.delete);
-  router.put("/update-admin/:id", jwtMiddleware.isAuth, adminControler.update);
+  router.delete("/delete/:id", verifyToken, adminControler.delete);
+  router.put("/update-admin/:id", verifyToken, adminControler.update);
   router.post("/refresh-token", adminControler.refreshToken);
 
   app.use("/api/v1/admin", router);

@@ -5,7 +5,13 @@ const constantNotify = require("../Utils/contanst");
 const bcrypt = require("bcrypt");
 const Admin = require("../models/admin.model");
 const adminService = require("../services/admin.service");
+const {
+  signAccesToken,
+  signRefreshToken,
+  verifyToken,
+} = require("../middlewares/init_jwt");
 const tableName = "tbl_admin";
+const JWT = require("jsonwebtoken");
 
 // Register
 exports.register = async (req, res) => {
@@ -180,6 +186,7 @@ exports.login = async (req, res) => {
     });
   }
   const { account, password } = req.body;
+  // console.log({ account, password });
 
   // Validate Account
   if (!regex.regexAccount.test(account)) {
@@ -479,25 +486,114 @@ exports.refreshToken = async (req, res) => {
   try {
     const userId = req.body.userId;
     const refreshToken = req.body.refreshToken;
-
-    if (!refreshToken) {
-      return res.send({
-        result: false,
-        error: [{ msg: `Refresh Token ${constantNotify.NOT_EXITS}` }],
-      });
-    }
-    adminService.refreshToken(userId, refreshToken, (err, res_) => {
+    // console.log("check refreshToken controler::", refreshToken);
+    db.getConnection((err, conn) => {
       if (err) {
         return res.send({
           result: false,
           error: [err],
         });
       }
-      res.send({
-        result: true,
-        data: [res_],
-      });
+      // check refreshToken is exist at DB ?
+      conn.query(
+        `SELECT * FROM ${tableName} WHERE refresh_token LIKE "%${refreshToken}%" AND id = "${userId}"`,
+        async (err, dataRes) => {
+          if (err) {
+            return res.send({
+              result: false,
+              error: [err],
+            });
+          }
+          // console.log("check data refresh_token:::", dataRes);
+          if (dataRes.length === 0) {
+            const query = `UPDATE ${tableName} SET refresh_token = 0 WHERE id = ${userId}`;
+            conn.query(query, (err, data) => {
+              if (err) {
+                return res.send({ msg: constantNotify.ERROR }, null);
+              }
+            });
+          }
+
+          if (dataRes.length !== 0) {
+            await JWT.verify(
+              refreshToken,
+              process.env.REFRESH_TOKEN_SECRET,
+              (err) => {
+                if (err) {
+                  return res.send({
+                    result: false,
+                    error: [err],
+                  });
+                }
+                conn.query(
+                  `SELECT id,name FROM tbl_admin WHERE id = ?`,
+                  userId,
+                  async (err, dataRes_) => {
+                    if (err) {
+                      return res.send({
+                        result: false,
+                        error: [{ msg: constantNotify.ERROR }],
+                      });
+                    }
+                    if (dataRes_ && dataRes_.length > 0) {
+                      const dataRefresh = {
+                        userId: dataRes_[0].id,
+                        name: dataRes_[0].name,
+                      };
+                      // console.log(dataRefresh);
+                      const _token = await signAccesToken(dataRefresh);
+                      const _refreshToken = await signRefreshToken(dataRefresh);
+                      // console.log(_token);
+
+                      /**update RefreshToken at DB */
+                      const updateToken = `UPDATE ${tableName} SET refresh_token = ? WHERE id = ?`;
+                      conn.query(
+                        updateToken,
+                        [_refreshToken, userId],
+                        (err, dataRes_) => {
+                          // console.log(dataRes_);
+                          if (err) {
+                            return result({ msg: constantNotify.ERROR }, null);
+                          }
+                        },
+                      );
+                      return res.send({
+                        result: true,
+                        accessToken: _token,
+                        newRefreshToken: _refreshToken,
+                      });
+                    }
+                  },
+                );
+              },
+            );
+          }
+        },
+      );
+      conn.release();
     });
+    // console.log(userId);
+    // const refreshToken = req.body.refreshToken;
+
+    // if (!refreshToken) {
+    //   return res.send({
+    //     result: false,
+    //     error: [{ msg: `Refresh Token ${constantNotify.NOT_EXITS}` }],
+    //   });
+    // }
+
+    // adminService.refreshToken(userId, (err, res_) => {
+    //   if (err) {
+    //     return res.send({
+    //       result: false,
+    //       error: [err],
+    //     });
+    //   }
+    //   res.send({
+    //     result: true,
+    //     data: res_,
+    //   });
+    // });
   } catch (error) {
     return res.send({
       result: false,

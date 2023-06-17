@@ -4,6 +4,7 @@ const constantNotify = require("../Utils/contanst");
 const bcrypt = require("bcrypt");
 const jwts = require("../helper/auth.helper");
 const jwt = require("jsonwebtoken");
+const { signAccesToken, signRefreshToken } = require("../middlewares/init_jwt");
 // Register
 exports.register = async (data, result) => {
   try {
@@ -30,7 +31,7 @@ exports.login = async (account, password, result) => {
       }
       // check id, active and password
       conn.query(
-        `SELECT id,active,password FROM ${tableName} WHERE account = ?`,
+        `SELECT id,name,active,password FROM ${tableName} WHERE account = ?`,
         account,
         async (err, dataRes) => {
           try {
@@ -46,12 +47,13 @@ exports.login = async (account, password, result) => {
                 msg: constantNotify.ACTIVE_FAILD,
               });
             }
-            // console.log(dataRes[0].password);
+            // console.log(dataRes);
 
             const passwordCompare = await bcrypt.compare(
               password,
               dataRes[0].password,
             );
+
             if (!passwordCompare) {
               return result(
                 {
@@ -64,9 +66,15 @@ exports.login = async (account, password, result) => {
 
             // console.log(dataRes[0].id);
 
+            const data = {
+              userId: dataRes[0].id,
+              name: dataRes[0].name,
+            };
+
             /**Create AccessToken and RefreshToken */
-            const _token = await jwts.make(dataRes[0].id);
-            const _refreshToken = await jwts.refreshToken(dataRes[0].id);
+            const _token = await signAccesToken(data);
+            const _refreshToken = await signRefreshToken(data);
+            // console.log(_token);
 
             /**update RefreshToken at DB */
             const updateToken = `UPDATE ${tableName} SET refresh_token = ? WHERE id = ?`;
@@ -82,7 +90,7 @@ exports.login = async (account, password, result) => {
             );
             // tKVZ8YNYtqzeQeBTKQ
             result(null, {
-              id: dataRes[0].id,
+              userId: dataRes[0].id,
               accessToken: _token,
               refreshToken: _refreshToken,
             });
@@ -239,6 +247,7 @@ exports.refreshToken = async (userId, resfreshToken, result) => {
                 constantNotify.REFRESH_TOKEN,
                 { expiresIn: constantNotify.REFRESH_TOKEN_TIME_LIFE },
               );
+
               const query = `UPDATE tbl_admin SET refresh_token=? WHERE id=?`;
               conn.query(query, [refreshToken, userId], (err, dataRes__) => {
                 if (err) {
