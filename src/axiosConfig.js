@@ -62,13 +62,13 @@ instance.interceptors.response.use(
       if (msg && msg === "jwt expired") {
         console.log("Trường hợp token hết hạn");
         /**Step 1 */
-        const { accessToken, newRefreshToken } = await refreshToken();
-        /**Step 2 */
-        if (accessToken) {
-          console.log("Đã lấy lại accessToken thành công:::");
-          config.headers["X-Token"] = accessToken;
+        const { newAccessToken, newRefreshToken } = await refreshToken();
+        if (newAccessToken && newRefreshToken) {
+          console.log(":::Đã lấy lại accessToken thành công:::");
+          /**Step 2 */
+          config.headers["X-Token"] = newAccessToken;
           /**Step 3 */
-          await instance.setLocalAccessToken(accessToken);
+          await instance.setLocalAccessToken(newAccessToken);
           await instance.setLocalRefreshToken(newRefreshToken);
           return instance(config);
         }
@@ -83,23 +83,12 @@ instance.interceptors.response.use(
 );
 
 async function refreshToken() {
-  const token = await instance.getLocalAccessToken();
   const refreshToken = await instance.getLocalRefreshToken();
-  console.log("check refreshToken trước khi gửi lên server:::", refreshToken);
-  // const decodeToken = jwtDecode(token.slice(0, token.length - 1));
-  // console.log("Check decode Token", decodeToken);
+  console.log("Check RefreshToken trước khi gửi lên server:::", refreshToken);
   const dataRefresh = {
-    token: token,
     refreshToken: refreshToken,
   };
-  // console.log(dataRefresh);
   return (await instance.post("/refresh-token", dataRefresh)).data;
-  // if (decodeToken) {
-  // }
 }
-
-// export const axiosUpload = axios.create({
-//   baseURL: "http://localhost:8080/api/v1",
-// });
 
 export default instance;
