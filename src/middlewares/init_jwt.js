@@ -3,14 +3,14 @@ require("dotenv").config();
 
 const signAccesToken = async (data) => {
   const token = await JWT.sign(data, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: "1m",
+    expiresIn: process.env.TIME_ACCESS_EXPIRE,
   });
 
   return token;
 };
 const signRefreshToken = async (data) => {
   const token = await JWT.sign(data, process.env.REFRESH_TOKEN_SECRET, {
-    expiresIn: "10m",
+    expiresIn: process.env.TIME_REFRESH_EXPIRE,
   });
 
   return token;

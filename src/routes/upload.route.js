@@ -3,6 +3,7 @@ const { body } = require("express-validator");
 const uploadController = require("../controllers/upload.controller");
 const upload = require("../middlewares/upload.middleware");
 const uploadExcel = require("../middlewares/uploadExcel.middleware");
+
 module.exports = (app) => {
   router.post("/", upload.single("image"), uploadController.upload);
   router.post(

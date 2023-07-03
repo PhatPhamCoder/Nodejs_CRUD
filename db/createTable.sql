@@ -22,3 +22,30 @@ create table tbl_role
 	created_at 		bigint(20),
 	updated_at 		bigint(20)
 )
+
+create table tbl_user
+(
+	id 					int(11) primary key,
+	userName 			varchar(255),
+	roomName			varchar(255),
+	active				tinyint(1),
+	created_at 			bigint(20),
+	updated_at 			bigint(20)
+)
+
+create table tbl_room
+(
+	id 					int(11) primary key,
+	roomName			varchar(255),
+	active				tinyint(1),
+	created_at 			bigint(20),
+	updated_at 			bigint(20)
+)
+
+create table tbl_chat
+(
+	id 					int(11) primary key,
+	roomID 				int(11),
+	userID 				int(11),
+	created_at 			bigint(20),
+)

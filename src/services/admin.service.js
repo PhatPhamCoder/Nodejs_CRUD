@@ -2,16 +2,17 @@ const db = require("../models/connectDb");
 const tableName = "tbl_admin";
 const constantNotify = require("../Utils/contanst");
 const bcrypt = require("bcrypt");
-const jwts = require("../helper/auth.helper");
 const jwt = require("jsonwebtoken");
 const { signAccesToken, signRefreshToken } = require("../middlewares/init_jwt");
+const { networkInterfaces } = require("os");
+const sendEmail = require("../controllers/email.controller");
+
 // Register
 exports.register = async (data, result) => {
   try {
     const dataInsert = `INSERT INTO ${tableName} SET ?`;
     db.query(dataInsert, data, async (err, dataRes__) => {
       if (err) {
-        // console.log(err);
         return result({ msg: constantNotify.ERROR }, null);
       }
       result(null, dataRes__.insertId);
@@ -21,9 +22,60 @@ exports.register = async (data, result) => {
   }
 };
 
+// verifyOTP
+exports.verifyOTP = async (data, result) => {
+  try {
+    const compareOTP = await bcrypt.compare(data?.otp, data?.OTP);
+    if (!compareOTP) {
+      const nets = networkInterfaces();
+      const results = {};
+
+      for (const name of Object.keys(nets)) {
+        for (const net of nets[name]) {
+          const familyV4Value = typeof net.family === "string" ? "IPv4" : 4;
+          if (net.family === familyV4Value && !net.internal) {
+            if (!results[name]) {
+              results[name] = [];
+            }
+            results[name].push(net.address);
+          }
+        }
+      }
+
+      const dataSendEmail = {
+        to: data?.email,
+        text: "Hey user",
+        subject: "[OPTECH] CẢNH BÁO BẢO MẬT",
+        html: `Hi bạn,
+            Chúng tôi nghi ngờ tài khoản của bạn đang cố bị xâm nhập tại địa chỉ IP: ${
+              results["Wi-Fi"][0] || results["Ethernet"][0]
+            }
+            Bạn vui lòng liên hệ đội ngũ Admin để bảo vệ tài khoản!
+            `,
+      };
+
+      await sendEmail(dataSendEmail);
+      db.query(`UPDATE ${tableName} SET OTP = 0, active = 0`);
+      return result({ msg: `OTP ${constantNotify.IS_WRONG}` }, null);
+    }
+    const query = `UPDATE ${tableName} SET OTP = 0, active = 1`;
+    db.query(query, (err, data) => {
+      if (err) {
+        return result({ msg: constantNotify.ERROR }, null);
+      }
+      if (data.affectedRows === 0) {
+        return result({ msg: `ID ${constantNotify.NOT_EXITS}` }, null);
+      }
+
+      result(null, data.insertId);
+    });
+  } catch (error) {
+    return result({ msg: error }, null);
+  }
+};
+
 // Login
 exports.login = async (account, password, result) => {
-  // console.log(account, password);
   try {
     db.getConnection((err, conn) => {
       if (err) {
@@ -31,7 +83,7 @@ exports.login = async (account, password, result) => {
       }
       // check id, active and password
       conn.query(
-        `SELECT id,name,active,password FROM ${tableName} WHERE account = ?`,
+        `SELECT id,role_id,name,active,password,email FROM ${tableName} WHERE account = ?`,
         account,
         async (err, dataRes) => {
           try {
@@ -55,6 +107,36 @@ exports.login = async (account, password, result) => {
             );
 
             if (!passwordCompare) {
+              const nets = networkInterfaces();
+              const results = {};
+
+              for (const name of Object.keys(nets)) {
+                for (const net of nets[name]) {
+                  const familyV4Value =
+                    typeof net.family === "string" ? "IPv4" : 4;
+                  if (net.family === familyV4Value && !net.internal) {
+                    if (!results[name]) {
+                      results[name] = [];
+                    }
+                    results[name].push(net.address);
+                  }
+                }
+              }
+
+              const dataSendEmail = {
+                to: dataRes[0].email,
+                text: "Hey user",
+                subject: "[OPTECH] CẢNH BÁO BẢO MẬT",
+                html: `Hi bạn,
+                  Chúng tôi nghi ngờ tài khoản của bạn đang cố bị xâm nhập tại địa chỉ IP: ${
+                    results["Wi-Fi"][0] || results["Ethernet"][0]
+                  }
+                  Bạn vui lòng đăng nhập hệ thống đổi mật khẩu để bảo vệ tài khoản!
+                `,
+              };
+
+              await sendEmail(dataSendEmail);
+              db.query(`UPDATE ${tableName} SET OTP = 0, active = 0`);
               return result(
                 {
                   param: "password",
@@ -64,11 +146,10 @@ exports.login = async (account, password, result) => {
               );
             }
 
-            // console.log(dataRes[0].id);
-
             const data = {
               userId: dataRes[0].id,
               name: dataRes[0].name,
+              role_id: dataRes[0].role_id,
             };
 
             /**Create AccessToken and RefreshToken */
@@ -82,13 +163,11 @@ exports.login = async (account, password, result) => {
               updateToken,
               [_refreshToken, dataRes[0].id],
               (err, dataRes_) => {
-                // console.log(dataRes_);
                 if (err) {
                   return result({ msg: constantNotify.ERROR }, null);
                 }
               },
             );
-            // tKVZ8YNYtqzeQeBTKQ
             result(null, {
               userId: dataRes[0].id,
               accessToken: _token,

@@ -22,46 +22,46 @@ exports.upload = async (req, res) => {
       });
     }
 
-    if (req.file.size <= 2000000) {
-      // console.log(req.file.path);
-      const imageName = req.file.filename;
-      // console.log("Check Image name::", imageName);
+    // if (req.file.size <= 2000000) {
+    // console.log(req.file.path);
+    const imageName = req.file.filename;
+    // console.log("Check Image name::", imageName);
 
-      await sharp(req.file.path)
-        .resize({ width: 150, height: 150 })
-        .toFile(`uploads/thumb/` + req?.file?.filename, (err) => {
+    await sharp(req.file.path)
+      .resize({ width: 150, height: 150 })
+      .toFile(`uploads/thumb/` + req?.file?.filename, (err) => {
+        if (err) {
+          return res.send({
+            result: false,
+            error: [err],
+          });
+        }
+
+        const image = new Image({
+          file_src: imageName,
+          created_at: Date.now(),
+        });
+        delete updated_at;
+
+        uploadService.upload(image, (err, res_) => {
           if (err) {
             return res.send({
               result: false,
-              error: [err],
+              error: [{ msg: constantNotify.ERROR }],
             });
           }
-
-          const image = new Image({
-            file_src: imageName,
-            created_at: Date.now(),
-          });
-          delete updated_at;
-
-          uploadService.upload(image, (err, res_) => {
-            if (err) {
-              return res.send({
-                result: false,
-                error: [{ msg: constantNotify.ERROR }],
-              });
-            }
-            return res.send({
-              result: true,
-              data: { msg: constantNotify.ADD_DATA_SUCCESS },
-            });
+          return res.send({
+            result: true,
+            data: { msg: constantNotify.ADD_DATA_SUCCESS },
           });
         });
-    } else {
-      return res.send({
-        result: false,
-        error: [{ msg: constantNotify.VALIDATE_FILE_SIZE }],
       });
-    }
+    // } else {
+    //   return res.send({
+    //     result: false,
+    //     error: [{ msg: constantNotify.VALIDATE_FILE_SIZE }],
+    //   });
+    // }
   } catch (error) {
     return res.send({
       result: false,
@@ -135,7 +135,7 @@ exports.getById = async (req, res) => {
           );
         },
       );
-      conn.release();
+      db.releaseConnection(conn);
     });
   } catch (error) {
     return res.send({
@@ -219,7 +219,7 @@ exports.delete = async (req, res) => {
           );
         },
       );
-      conn.release();
+      db.releaseConnection(conn);
     });
   } catch (error) {
     return res.send({
@@ -419,6 +419,15 @@ exports.importExcel = async (req, res) => {
             ],
           });
         }
+
+        // Array.prototype.forEachData = async function (callback, thisAgr) {
+        //   for (let i = 0; i < this.length; i++) {
+        //     await callback.call(thisAgr, this[i], i, this);
+        //   }
+        // };
+
+        // for (const dataAdmin of dataExcel) {
+        // }
 
         const dataAdmin = dataExcel?.map((item) => {
           const password = item["password"];

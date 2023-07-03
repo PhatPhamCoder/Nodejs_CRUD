@@ -25,6 +25,9 @@ const constantNotify = {
   VALIDATE_FILE_SIZE: "Dung lượng file quá 2MB",
   VALIDATE_FILE: "Vui lòng chọn file tải lên",
   DATALIMIT1000: "Dữ liệu vượt quá giới hạn 1000",
+  NOT_ACTIVE: "chưa kích hoạt",
+  IS_WRONG: "bị sai",
+  SEND_SUCCESS: "gửi thành công",
 };
 
 module.exports = constantNotify;
