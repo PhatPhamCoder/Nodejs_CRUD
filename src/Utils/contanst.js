@@ -10,6 +10,7 @@ const constantNotify = {
     "Mật khẩu bao gồm 8 chữ số bao gồm ký tự in hoa, chữ thường, số",
   VALIDATE_IMAGE: "Vui lòng chọn hình ảnh",
   ERROR: "Đã xảy ra lỗi",
+  INVALID: "không xác thực",
   ALREADY_EXIST: "đã tồn tại",
   ADD_DATA_SUCCESS: "Thêm thành công",
   ADD_DATA_FAILED: "Thêm thất bại",

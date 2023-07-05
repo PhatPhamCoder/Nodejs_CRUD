@@ -6,7 +6,7 @@ const { verifyToken } = require("../middlewares/init_jwt");
 const { verifyLimiter } = require("../middlewares/rateLimitMiddleware");
 
 module.exports = (app) => {
-  router.get("/getall", adminControler.getall);
+  router.get("/getall", verifyToken, adminControler.getall);
   router.get("/getbyid/:id", verifyToken, adminControler.getById);
   // Tạo người dùng chỉ cho phép admin sau khi đăng nhập có token mới tạo đc
   router.post("/register", adminControler.register);
@@ -25,7 +25,6 @@ module.exports = (app) => {
   router.post("/refresh-token", adminControler.refreshToken);
 
   // Should add rate limit at OTP
-  router.post("/send-otp", adminControler.sendOTP);
   router.post("/verify-otp/:id", adminControler.verifyOTP);
   router.post("/resend-otp", adminControler.reSendOTP);
 

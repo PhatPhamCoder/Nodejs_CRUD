@@ -1,4 +1,5 @@
 const JWT = require("jsonwebtoken");
+const constantNotify = require("../Utils/contanst");
 require("dotenv").config();
 
 const signAccesToken = async (data) => {
@@ -18,21 +19,30 @@ const signRefreshToken = async (data) => {
 
 const verifyToken = async (req, res, next) => {
   try {
-    if (req.headers["x-token"]) {
-      const token = req.headers["x-token"];
-      //   console.log(`Token is ::${token}`);
-      const payload = await JWT.verify(token, process.env.ACCESS_TOKEN_SECRET);
-      req.user = payload;
+    const token = req.headers["x-token"];
+    //console.log(`Token is ::${token}`);
+    if (!token) {
+      return res.send({
+        result: false,
+        error: [{ msg: `ID người dùng ${constantNotify.INVALID}` }],
+      });
+    }
+    if (token) {
+      const decodeUser = await JWT.verify(
+        token,
+        process.env.ACCESS_TOKEN_SECRET,
+      );
+      req.user = decodeUser;
       return next();
     }
   } catch (error) {
     if (error.name === "TokenExpiredError") {
-      return res.status(200).json({
+      return res.status(200).send({
         code: 401,
         msg: error.message,
       });
     }
-    return res.status(200).json({
+    return res.status(200).send({
       code: 500,
       msg: error,
     });

@@ -211,7 +211,6 @@ exports.verifyOTP = async (req, res) => {
           error: [{ msg: constantNotify.ERROR }],
         });
       }
-
       conn.query(
         `SELECT email,OTP FROM ${tableName} WHERE id = ${userId}`,
         (err, dataRes) => {
@@ -221,7 +220,6 @@ exports.verifyOTP = async (req, res) => {
               error: [err],
             });
           }
-
           const data = {
             userId,
             otp,
@@ -246,9 +244,7 @@ exports.verifyOTP = async (req, res) => {
                   Bạn vui lòng không chia sẻ mã OTP này để bảo vệ tài khoản của mình nhé!
                   `,
             };
-
             await sendEmail(dataSendEmail);
-
             return res.send({
               result: true,
               data: { msg: "Xác thực thành công" },
@@ -277,7 +273,6 @@ exports.reSendOTP = async (req, res) => {
       upperCaseAlphabets: false,
       specialChars: false,
     });
-    console.log(email, OTP);
 
     const salt = await bcrypt.genSalt(10);
     const hashOTP = await bcrypt.hash(OTP, salt);
@@ -308,7 +303,6 @@ exports.reSendOTP = async (req, res) => {
               Bạn vui lòng không chia sẻ mã OTP này để bảo vệ tài khoản của mình nhé!
           `,
           };
-
           await sendEmail(dataSendEmail);
           return res.send({
             result: true,
@@ -776,50 +770,4 @@ exports.refreshToken = async (req, res) => {
       db.releaseConnection(conn);
     });
   });
-};
-
-exports.sendOTP = async (req, res) => {
-  try {
-    const email = req.body.email;
-
-    db.getConnection((err, conn) => {
-      if (err) {
-        return res.send({
-          result: false,
-        });
-      }
-      conn.query(
-        `SELECT email FROM ${tableName} WHERE email = "${email}"`,
-        (err, dataRes) => {
-          if (err) {
-            return res.send({
-              result: false,
-              error: [err],
-            });
-          }
-          if (dataRes.length === 0) {
-            return res.send({
-              result: false,
-              error: [{ msg: `Người dùng ${constantNotify.NOT_EXITS}` }],
-            });
-          }
-          if (dataRes.length !== 0) {
-            const OTP = otpGenerator.generate(6, {
-              digits: true,
-              lowerCaseAlphabets: false,
-              upperCaseAlphabets: false,
-              specialChars: false,
-            });
-            adminService.sendOTP;
-          }
-        },
-      );
-      conn.release();
-    });
-  } catch (error) {
-    return res.send({
-      result: false,
-      error: [{ msg: error }],
-    });
-  }
 };
